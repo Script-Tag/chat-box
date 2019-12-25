@@ -1,0 +1,19 @@
+@import 'base';
+
+.chatBoxUserInfoWrap {
+    margin: 25px;
+    display: flex;
+    justify-content: center;
+}
+
+.chatBoxUserNameInput {
+    margin-right: 5px;
+    width: 100%;
+}
+
+.chatBoxUserInfoSubmit {
+    background-color: $primary-bg-color;
+    color: $primary-text-color;
+    border-width: 0px;
+    border-radius: 4px;
+}
