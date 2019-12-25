@@ -15,11 +15,9 @@ const firebaseConfig = {
     appId: "1:193941453700:web:06e4162a1bf31cdbcf3bd1",
     measurementId: "G-32TVNYH2GW"
   };
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
-//   firebase.analytics();
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<App />, document.getElementById('engagestreamingChatRoot'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as firebase from 'firebase';
+import ChatBox from "./Components/ChatBox";
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import Logo from "./Components/Logo";
 import Title from "./Components/Title";
@@ -17,9 +18,10 @@ class HomeScreen extends Component {
         super(props);
 
         this.state = {
-            showPopup: true,
+            showPopup: false,
             isEmailRequired: true,
             isPasswordRequired: true,
+            screenObject: null,
 
             logoUrl: "abcd",
             title: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
@@ -44,22 +46,25 @@ class HomeScreen extends Component {
     }
 
     componentDidMount() {
-        firebase.firestore().collection('users').onSnapshot((response) => {
-            // console.log(response, "response");
+        firebase.firestore().collection('groups').onSnapshot((response) => {            
             response.docs.map((_doc) => {
-                console.log("_doc",_doc.data())
-            })
-        })
+                let groupData = _doc.data();
+                console.log("_doc", groupData);
+                groupData.admin_id.get().then((adminDoc) => {
+                    groupData.admin_id = adminDoc.data();
+                });
+                this.setState({screenObject: groupData });
+          });
+      });
     }
 
     handleCloselPopup = () => this.setState({showPopup: false});
     
     handlePopupSubmit = (email, password) => {
-        debugger;
     };
 
     render() { 
-        const { showPopup, isPasswordRequired, isEmailRequired } = this.state;
+        const { showPopup, isPasswordRequired, isEmailRequired, screenObject } = this.state;
         return (
             <Container>
                 <ModelPopUp 
@@ -74,6 +79,7 @@ class HomeScreen extends Component {
                         {this.getOrderedComponent(val)}
                     </Row>
                 )}
+                { screenObject && <ChatBox />}
             </Container>
         );
     }
