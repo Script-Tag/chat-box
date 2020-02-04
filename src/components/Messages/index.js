@@ -2,19 +2,30 @@ import React, { Component } from 'react';
 import TextMessage from './TextMessage';
 import EmojiMessage from './EmojiMessage';
 import FileMessage from './FileMessage';
-import chatIconUrl from '../../assets/chat-icon.svg';
 import Avatar from 'react-avatar';
 
 class Message extends Component {
 
-  _renderMessageOfType(type) {
+  _renderMessageOfType = (type) => {
+      const { author, userId } = this.props.message;
+
+      let profileDiv = <div className="sc-message--avatar tooltipa">
+        <Avatar name={author+'_'+userId.id} 
+          title={userId.id}  maxInitials={2}
+          value={userId.id} size="30" round={true} />
+        {/* <span className="tooltiptext">{author}</span> */}
+        {/* <span className="sc-message--author-name">{author}</span> */}
+      </div>;
+
     switch(type) {
     case 'text':
-      return <TextMessage {...this.props.message} />;
+      return <> {profileDiv} <TextMessage {...this.props.message} /> </>;
     case 'emoji':
-      return <EmojiMessage {...this.props.message} />;
+      return <> {profileDiv} <EmojiMessage {...this.props.message} /> </>;
     case 'file':
-      return <FileMessage {...this.props.message} />;
+      return <> {profileDiv} <FileMessage {...this.props.message} /> </>;
+    case 'group_joined':
+      return <div>Joined Group</div>;
     default:
       console.error(`Attempting to load message with unsupported file type '${type}'`);
     }
@@ -25,15 +36,10 @@ class Message extends Component {
       'sc-message--content',
       (this.props.message.author === 'me' ? 'sent' : 'received')
     ];
-  
-    const { username } = this.props.message;
+
     return (
       <div className="sc-message">
         <div className={contentClassList.join(' ')}>
-          <div className="sc-message--avatar">
-            {/* <Avatar name= size="30" round={true} /> */}
-            <Avatar name={username} size="30" round={true} />
-          </div>
           {this._renderMessageOfType(this.props.message.type)}
         </div>
       </div>);

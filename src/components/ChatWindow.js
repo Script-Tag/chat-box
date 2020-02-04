@@ -13,6 +13,7 @@ class ChatWindow extends Component {
       showUserForm: true
     }
 
+    this.messages = firebase.firestore().collection('messages');
     this.users = firebase.firestore().collection('users');
     this.user = (_userId) => firebase.firestore().collection('user').doc(_userId);
   }
@@ -41,19 +42,42 @@ class ChatWindow extends Component {
       return false;
     }
 
+    let pageId = '11';
+    let randomNum = Math.floor((Math.random() * 10000000) + 1);
+    let timeStamp = new Date().getTime();
+    let uniqueUserId = pageId + randomNum + timeStamp;
+
+    localStorage.setItem('CHAT_UNIQUE_USER_ID', uniqueUserId);
+
     this.users.add({
       name: String(name).toLowerCase(),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      uniqueUserId
     }).then((docRef) => {
-      console.log(docRef.id, "User name has been saved");
-      localStorage.setItem('CHAT_USER_ID', docRef.id);
-      localStorage.setItem('CHAT_USER_KEY', localStorage.getItem("CHAT_USER_NAME") + "-" +new Date().getTime());
-    }).catch((error) => {
-      console.log(error, "User name error");
-    });
+      let messageData = {};
 
-    localStorage.setItem('CHAT_USER_NAME', name);
-    this.setState({showUserForm: false});
+      localStorage.setItem('CHAT_USER_ID', docRef.id);
+      localStorage.setItem('CHAT_USER_NAME', name);
+
+      if(!docRef.id) {
+        throw new Error('Required document ID');
+      }
+
+      messageData.userId = firebase.firestore().doc(`/users/${docRef.id}`);
+      messageData.data = null;
+      messageData.type = 'group_joined';
+      messageData.page_id = 11;
+      messageData.createdAt = firebase.firestore.FieldValue.serverTimestamp(); 
+
+      return this.messages.add(messageData);
+
+    })
+    .then((res) => {
+      this.setState({showUserForm: false});
+    })
+    .catch((error) => {
+      console.log(error, "Error: something went wrong while saving user name");
+    });
   }
 
   render() {

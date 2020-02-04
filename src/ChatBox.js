@@ -1,6 +1,7 @@
 import React,{Component} from 'react';
 import Launcher from './components/Launcher';
 import * as firebase from "firebase";
+import axios from 'axios';
 
 class ChatBox extends Component {
   constructor(props) {
@@ -13,7 +14,7 @@ class ChatBox extends Component {
 
     this.messages = firebase.firestore().collection('messages');
     this.message = (_messageId) => firebase.firestore().collection('messages').doc(_messageId);
-    this.user = (_userId) => firebase.firestore().collection('user').doc(_userId);
+    this.user = firebase.firestore().collection('users');
   }
 
   componentDidMount() {
@@ -21,23 +22,21 @@ class ChatBox extends Component {
   }
 
   getConservation = () => {
+    debugger;
     try {
-      this.messages.where("page_id", "==", 11).orderBy('createdAt', "asc").onSnapshot((querySnapshot) => {
+      this.messages.where("pageId", "==", 11).orderBy('createdAt', "asc").onSnapshot((querySnapshot) => {
         let messageList = [];
         querySnapshot.forEach((doc) => {
           let messageData = doc.data();
+          console.log(messageData, "messageDatamessageData")
           let localUserName = localStorage.getItem("CHAT_USER_NAME");
           let localUserId = localStorage.getItem("CHAT_USER_ID");
-
-          // messageData.userId.get().then((userDoc) => {
-
-          // });
+          let author = messageData.username;
 
           if(!localUserName) {
             return false;
           }
 
-          let author = messageData.userId.id;
 
           if(messageData.userId.id === localUserId) {
             author = "me";
@@ -48,6 +47,7 @@ class ChatBox extends Component {
             ...messageData
           });
         });
+
         this.setState({ messageList : messageList });
 
       });
@@ -59,19 +59,54 @@ class ChatBox extends Component {
   sendMessage = (messageData) => {
     let localUserName = localStorage.getItem("CHAT_USER_NAME");
     let userDocId = localStorage.getItem("CHAT_USER_ID");
+    let uniqueUserId = localStorage.getItem("CHAT_UNIQUE_USER_ID");
 
-    this.user(userDocId).get().then((userDocRef) => {
-      delete messageData.author;
-      messageData.userId = firebase.firestore().doc(`/users/${userDocRef.id}`);
-      messageData.page_id = 11;
-      messageData.createdAt = firebase.firestore.FieldValue.serverTimestamp(); 
-      return this.messages.add(messageData);
-    }).then((msgDocRef) => {
-      console.log(msgDocRef, "Message Added successfully");
-    }).catch((error) => {
-      console.log(error, "ERROR");
-    });
+    let baseUrl = "https://us-central1-chat-app-c8e3b.cloudfunctions.net/widgets";
+    axios.post(`${baseUrl}/send-message`, {
+      pageId: 11,
+      type: messageData.type,
+      data: messageData.data,
+      userDocId: userDocId,
+      uniqueUserId: uniqueUserId
+    })
+    .then((response) => {
+      console.log(response, "response")
+    })
+    .catch((error) => {
+      console.error(error, "Message was not sent");
+    })
   }
+
+  // sendMessage = ({data, type}) => {
+  //   let userDocId = localStorage.getItem("CHAT_USER_ID");
+  //   let uniqueUserId = localStorage.getItem("CHAT_UNIQUE_USER_ID");
+
+  //   this.user
+  //   .where(firebase.firestore.FieldPath.documentId(), "==", userDocId)
+  //   .where("uniqueUserId", "==", uniqueUserId)
+  //   .get()
+  //   .then((userDocRef) => {
+  //     let message = {};
+  //     userDocRef.forEach(function(doc) {
+  //       if(!doc.id) {
+  //         throw new Error('Required document ID');
+  //       }
+  //       message.userId = firebase.firestore().doc(`/users/${doc.id}`);
+  //       message.pageId = 11;
+  //       message.createdAt = firebase.firestore.FieldValue.serverTimestamp(); 
+  //       message.username = localStorage.getItem("CHAT_USER_NAME"); 
+  //       message.data = data; 
+  //       message.type = type; 
+  //     });
+  //     return this.messages.add(message);
+  //   })
+  //   .then((msgDocRef) => {
+  //     console.error(msgDocRef, "Message Added successfully");
+  //   })
+  //   .catch((error) => {
+  //     console.error(error, "ERROR");
+  //   });
+  // }
 
   _onMessageWasSent(message) {
     this.sendMessage(message);
@@ -90,14 +125,14 @@ class ChatBox extends Component {
     });
   }
 
-  _sendMessage(text) {
+  _sendMessage(text, type = 'text') {
     if (text.length > 0) {
       const newMessagesCount = this.state.isOpen ? this.state.newMessagesCount : this.state.newMessagesCount + 1;
       this.setState({
         newMessagesCount: newMessagesCount,
         messageList: [...this.state.messageList, {
           author: 'them',
-          type: 'text',
+          type,
           data: { text }
         }]
       });
@@ -119,7 +154,7 @@ class ChatBox extends Component {
         <div>
         <Launcher
           agentProfile={{
-            teamName: 'Team A',
+            teamName: 'Chat Group',
             imageUrl: 'https://a.slack-edge.com/66f9/img/avatars-teams/ava_0001-34.png'
           }}
           onMessageWasSent={this._onMessageWasSent.bind(this)}
@@ -132,7 +167,7 @@ class ChatBox extends Component {
         />
       </div>
       );
-    }
+  }
 }
 
 export default ChatBox;
