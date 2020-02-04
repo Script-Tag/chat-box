@@ -22,7 +22,6 @@ class ChatBox extends Component {
   }
 
   getConservation = () => {
-    debugger;
     try {
       this.messages.where("pageId", "==", 11).orderBy('createdAt', "asc").onSnapshot((querySnapshot) => {
         let messageList = [];

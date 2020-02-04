@@ -10,8 +10,7 @@ function UserInfo(props) {
             />
             <button className="chatBoxUserInfoSubmit" 
                 onClick={() => props.onUserNameSubmit(userName)} 
-            >
-                Submit
+            >Submit
             </button>
         </div>
     );

@@ -1,38 +1,36 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect, useRef } from 'react';
 
+function PopupWindow (props) {
+  let emojiPopup = useRef();
 
-class PopupWindow extends Component {
+  useEffect(() => {
+    const scLauncher = document.querySelector('#sc-launcher');
+    scLauncher.addEventListener('click', interceptLauncherClick);
 
-  componentDidMount() {
-    this.scLauncher = document.querySelector('#sc-launcher');
-    this.scLauncher.addEventListener('click', this.interceptLauncherClick);
+    return () => {
+      scLauncher.removeEventListener('click', interceptLauncherClick);      
+    }
+  });
+
+  const interceptLauncherClick = (e) => {
+    const { isOpen, onClickedOutside } = props;
+    const clickedOutsideVar = !emojiPopup.contains(e.target) && isOpen;
+    clickedOutsideVar && onClickedOutside(e);
   }
 
-  componentWillUnmount() {
-    this.scLauncher.removeEventListener('click', this.interceptLauncherClick);
-  }
-
-  interceptLauncherClick = (e) => {
-    const { isOpen } = this.props;
-    const clickedOutside = !this.emojiPopup.contains(e.target) && isOpen;
-    clickedOutside && this.props.onClickedOutside(e);
-  }
-
-  render() {
-    const { isOpen, children } = this.props;
-    return (
-      <div className="sc-popup-window" ref={e => this.emojiPopup = e}>
-        <div className={`sc-popup-window--cointainer ${isOpen ? '' : 'closed'}`}>
-          <input
-            onChange={this.props.onInputChange}
-            className="sc-popup-window--search"
-            placeholder="Search emoji..."
-          />
-          {children}
-        </div>
+  const { isOpen, children, onInputChange } = props;
+  return (
+    <div className="sc-popup-window" ref={(e) => emojiPopup = e}>
+      <div className={`sc-popup-window--cointainer ${isOpen ? '' : 'closed'}`}>
+        <input
+          onChange={onInputChange}
+          className="sc-popup-window--search"
+          placeholder="Search emoji..."
+        />
+        {children}
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 export default PopupWindow;

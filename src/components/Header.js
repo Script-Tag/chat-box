@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import closeIcon from './../assets/close-icon.png';
 
 function Header(props) {

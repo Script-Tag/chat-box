@@ -1,20 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Message from './Messages';
 
-function MessageList(props) {
-  let scrollList = useRef(null);
+export default function MessageList(props) {
+  let messagesEndRef = useRef(null);
 
   useEffect(() => {
-    // scrollList.scrollTop = scrollList.scrollHeight
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
   });
 
   return (
-    <div className="sc-message-list" ref={scrollList}>
+    <div className="sc-message-list">
       {props.messages.map((message, i) => {
         return <Message message={message} key={i} />;
       })}
+      <div ref={messagesEndRef} />
     </div>
   );
 }
-
-export default MessageList;
